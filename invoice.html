@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Invoice</title>
+    <meta name="description" content="{{.Issuer.Name}} Invoice {{.Number}}">
+    <style media="print">#page { left: 0; top: 0; width: 95%; height: 100%; border: none; }</style>
+    <style media="screen">#page { left: .1in; top: .1in; width: 7.9in; height: 10.4in; border: 1px solid black; }</style>
+    <style>
+        a:visited, a:hover, a:active, a {
+            color: #16F;
+            text-decoration: none;
+        }
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        #page {
+            display: block;
+            position: fixed;
+            padding: .05in;
+
+        }
+        header {
+            margin-top: 0;
+            margin-bottom: .5in;
+        }
+        span.issuer {
+            float: right;
+            font-size: .8em;
+        }
+        div.flexcontainer {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            align-content: stretch;
+            align-items: flex-start;
+        }
+        div.gridthird {
+            flex: 0 1 auto;
+            align-self: auto;
+            min-width: 32%;
+        }
+        h1 {
+            margin: 0 0 0.2in 0.1in;
+            font-size: 1.3em;
+        }
+        h2 {
+            color: #38F;
+            font-size: 1.0em;
+            font-variant: small-caps;
+            margin: 0 0 0.1in 0.05in;
+        }
+        h2:nth-child(n+2) {
+            margin-top: 0.1in;
+        }
+
+        /* itemization table */
+        table {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        table > caption {
+            clip: rect(1px, 1px, 1px, 1px);
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+        }
+        th {
+            font-weight: normal;
+            text-align: center;
+            text-decoration: underline;
+            text-decoration-color: #aaa;
+        }
+
+        /* alternate row colors */
+        tbody > tr:nth-child(2n) {
+            background-color: #eee;
+        }
+        tbody > tr:nth-child(2n+1) {
+            background-color: none;
+        }
+        
+        /* left align descriptive column, right align value columns */
+        td:nth-child(1) {
+            text-align: left;
+        }
+        td:nth-child(n+2) {
+            text-align: right;
+        }
+
+        /* stick to absolute bottom of document */
+        footer {
+            display: block;
+            position: absolute;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="page">
+        <header role="banner">
+            <span class="issuer">
+                {{if .Issuer.Email}}
+                <a href="mailto:{{.Issuer.Email}}?subject=Invoice%20{{.Number}}">{{.Issuer.Name}}</a>
+                {{else}}
+                {{.Issuer.Name}}
+                {{end}}
+                {{if .Issuer.Phone }}/
+                <a href="tel:+{{.Issuer.Phone.Raw}}">{{.Issuer.Phone}}</a>{{end}}
+                {{if .Issuer.Site.URL }}/
+                <a href="{{.Issuer.Site.URL}}">{{if .Issuer.Site.Name}}{{.Issuer.Site.Name}}{{else}}{{.Issuer.Site.URL}}{{end}}</a>{{end}}
+            </span>
+            <h1>Invoice</h1>
+            <div class="flexcontainer">
+                <div class="gridthird">
+                    <h2>Bill To</h2>
+                    <address>
+                        <div>{{.Recipient.Name}}</div>
+                        {{range .Recipient.Address}}<div>{{ . }}</div>{{end}}
+                    </address>
+                </div>
+                <div class="gridthird">
+                    <h2>Date Issued</h2>
+                    <time datetime="{{.Issued.YYYYMMDD}}">{{.Issued}}</time>
+                    <h2>Date Due</h2>
+                    <time datetime="{{.DueDate.YYYYMMDD}}">{{.DueDate}}</time>
+                </div>
+                <div class="gridthird">
+                    <h2>Invoice</h2>
+                    <span>{{.Number}}</span>
+                    <h2>Balance due</h2>
+                    <span>{{.AmountDue}}</span>
+                </div>
+            </div>
+        </header>
+        <main>
+            <table>
+                <caption>Itemized Breakdown</caption>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>USD</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Items}}
+                    <tr>
+                        <td>{{.Description}}</td>
+                        <td>{{.Quantity}}</td>
+                        <td>{{.CostPer}}</td>
+                        <td>{{.Value}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <td colspan="2">Subtotal</td>
+                        <td>{{.Items.Sum}}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="2">Paid</td>
+                        <td>{{.AmountPaid}}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="2">Due</td>
+                        <td>{{.AmountDue}}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </main>
+        <footer>
+            <p>Please make payment to...
+                <address>
+                    {{.Issuer.Name}}
+                    {{range .Issuer.Address}}
+                    {{ . }}
+                    {{end}}
+                </address>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
