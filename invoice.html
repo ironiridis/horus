@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"><!-- {{$cur := .Currency}}-->
 <head>
     <meta charset="utf-8">
     <title>Invoice</title>
@@ -106,14 +106,11 @@
 <body>
     <div id="page">
         <header role="banner">
-            <span class="issuer">
-                {{if .Issuer.Email}}
+            <span class="issuer">{{if .Issuer.Email}}
                 <a href="mailto:{{.Issuer.Email}}?subject=Invoice%20{{.Number}}">{{.Issuer.Name}}</a>
-                {{else}}
-                {{.Issuer.Name}}
-                {{end}}
+                {{else}}{{.Issuer.Name}}{{end}}
                 {{if .Issuer.Phone }}/
-                <a href="tel:+{{.Issuer.Phone.Raw}}">{{.Issuer.Phone}}</a>{{end}}
+                <a href="tel:{{.Issuer.Phone}}">{{.Issuer.Phone.Fmt}}</a>{{end}}
                 {{if .Issuer.Site.URL }}/
                 <a href="{{.Issuer.Site.URL}}">{{if .Issuer.Site.Name}}{{.Issuer.Site.Name}}{{else}}{{.Issuer.Site.URL}}{{end}}</a>{{end}}
             </span>
@@ -136,7 +133,7 @@
                     <h2>Invoice</h2>
                     <span>{{.Number}}</span>
                     <h2>Balance due</h2>
-                    <span>{{.AmountDue}}</span>
+                    <span>{{.AmountDue | $cur.FormatValue}}</span>
                 </div>
             </div>
         </header>
@@ -152,30 +149,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{range .Items}}
-                    <tr>
+                    {{range .Items}}<tr>
                         <td>{{.Description}}</td>
                         <td>{{.Quantity}}</td>
-                        <td>{{.CostPer}}</td>
-                        <td>{{.Value}}</td>
-                    </tr>
-                    {{end}}
+                        <td>{{.CostPer | $cur.FormatValue}}</td>
+                        <td>{{.Value | $cur.FormatValue}}</td>
+                    </tr>{{end}}
                 </tbody>
                 <tfoot>
                     <tr>
                         <td></td>
                         <td colspan="2">Subtotal</td>
-                        <td>{{.Items.Sum}}</td>
+                        <td>{{.Subtotal | $cur.FormatValue}}</td>
                     </tr>
                     <tr>
                         <td></td>
                         <td colspan="2">Paid</td>
-                        <td>{{.AmountPaid}}</td>
+                        <td>{{.Paid | $cur.FormatValue}}</td>
                     </tr>
                     <tr>
                         <td></td>
                         <td colspan="2">Due</td>
-                        <td>{{.AmountDue}}</td>
+                        <td>{{.AmountDue | $cur.FormatValue}}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -184,8 +179,7 @@
             <p>Please make payment to...
                 <address>
                     {{.Issuer.Name}}
-                    {{range .Issuer.Address}}
-                    {{ . }}
+                    {{range .Issuer.Address}}{{.}}
                     {{end}}
                 </address>
             </p>
